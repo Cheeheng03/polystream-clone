@@ -8,9 +8,19 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
 });
 
+const API_PROXY_TARGET = process.env.API_PROXY_TARGET || "https://app.polystream.xyz";
+
 const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${API_PROXY_TARGET}/api/:path*`,
+      },
+    ];
   },
 };
 
