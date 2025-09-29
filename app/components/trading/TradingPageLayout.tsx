@@ -297,7 +297,7 @@ const TradingInterface: React.FC<{
           height: 20px;
           width: 20px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: #000000;
           cursor: pointer;
           border: 2px solid #ffffff;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -308,7 +308,7 @@ const TradingInterface: React.FC<{
           height: 20px;
           width: 20px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: #000000;
           cursor: pointer;
           border: 2px solid #ffffff;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -337,11 +337,11 @@ const TradingInterface: React.FC<{
         }
         
         .slider:focus::-webkit-slider-thumb {
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
         }
         
         .slider:focus::-moz-range-thumb {
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
         }
       `}</style>
       {/* Order Book Section */}
@@ -405,9 +405,9 @@ const TradingInterface: React.FC<{
             onClick={() => setIsBuy(true)}
             className={`flex-1 py-2 px-4 rounded-l-lg text-sm font-medium ${
               isBuy 
-                ? "bg-green-500 text-white" 
-                : "bg-gray-100 text-gray-600"
-            }`}
+                ? "bg-black text-white border-2 border-black" 
+                : "bg-gray-100 text-gray-600 border-2 border-gray-300"
+            } ${!isBuy ? 'border-r-0' : ''}`}
           >
             Buy
           </button>
@@ -415,9 +415,9 @@ const TradingInterface: React.FC<{
             onClick={() => setIsBuy(false)}
             className={`flex-1 py-2 px-4 rounded-r-lg text-sm font-medium ${
               !isBuy 
-                ? "bg-red-500 text-white" 
-                : "bg-gray-100 text-gray-600"
-            }`}
+                ? "bg-white text-black border-2 border-black font-semibold" 
+                : "bg-gray-100 text-gray-600 border-2 border-gray-300"
+            } ${isBuy ? 'border-l-0' : ''}`}
           >
             Sell
           </button>
@@ -489,8 +489,8 @@ const TradingInterface: React.FC<{
               key={percentage}
               onClick={() => handlePercentageClick(percentage)}
               className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-colors ${
-                sliderValue === percentage
-                  ? "bg-blue-500 text-white"
+                Math.round(sliderValue) === percentage
+                  ? "bg-black text-white"
                   : "text-gray-600 bg-gray-100 hover:bg-gray-200"
               }`}
             >
@@ -503,19 +503,19 @@ const TradingInterface: React.FC<{
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700">Amount</span>
-            <span className="text-sm text-gray-500">{sliderValue}%</span>
+            <span className="text-sm text-gray-500">{sliderValue.toFixed(2)}%</span>
           </div>
           <div className="relative">
             <input
               type="range"
               min="0"
               max="100"
-              step="1"
+              step="0.01"
               value={sliderValue}
-              onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+              onChange={(e) => handleSliderChange(parseFloat(e.target.value))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
               style={{
-                background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${sliderValue}%, #e5e7eb ${sliderValue}%, #e5e7eb 100%)`
+                background: `linear-gradient(to right, #000000 0%, #000000 ${sliderValue}%, #e5e7eb ${sliderValue}%, #e5e7eb 100%)`
               }}
             />
             <div className="flex justify-between text-xs text-gray-400 mt-1">
@@ -563,10 +563,10 @@ const TradingInterface: React.FC<{
             }
           }}
           disabled={!amount || !total || parseFloat(amount) <= 0 || parseFloat(total) <= 0}
-          className={`w-full py-4 rounded-lg text-lg font-semibold text-white transition-all ${
+          className={`w-full py-3 rounded-lg text-sm font-medium transition-all ${
             isBuy 
-              ? "bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 disabled:from-gray-400 disabled:to-gray-500" 
-              : "bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-500"
+              ? "bg-black hover:bg-gray-800 text-white border-2 border-black disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:border-gray-300 disabled:hover:border-gray-300 disabled:cursor-not-allowed" 
+              : "bg-white hover:bg-gray-100 text-black border-2 border-black font-semibold disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:border-gray-300 disabled:hover:border-gray-300 disabled:cursor-not-allowed"
           }`}
         >
           {isBuy ? `BUY ${asset.symbol}` : `SELL ${asset.symbol}`}
@@ -865,21 +865,21 @@ export default function TradingPageLayout({ asset, candlestickData, orderBookDat
             <div className="mt-4 flex space-x-3">
               <Button
                 onClick={() => {
-                  setDefaultTradingMode('sell');
-                  setShowTrading(true);
-                }}
-                className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white rounded-xl"
-              >
-                SELL
-              </Button>
-              <Button
-                onClick={() => {
                   setDefaultTradingMode('buy');
                   setShowTrading(true);
                 }}
-                className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white rounded-xl"
+                className="flex-1 h-10 text-sm font-medium bg-black hover:bg-gray-800 text-white rounded-lg"
               >
                 BUY
+              </Button>
+              <Button
+                onClick={() => {
+                  setDefaultTradingMode('sell');
+                  setShowTrading(true);
+                }}
+                className="flex-1 h-10 text-sm font-medium bg-white hover:bg-gray-100 text-black border border-gray-300 rounded-lg"
+              >
+                SELL
               </Button>
             </div>
           )}

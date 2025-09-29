@@ -513,9 +513,9 @@ const PredictionDetailPage: React.FC<PredictionDetailPageProps> = ({ market }) =
               disabled={!amount || parseFloat(amount) <= 0}
               className={`w-full h-12 text-lg font-semibold rounded-lg ${
                 activeTab === 'buy'
-                  ? "bg-green-400 hover:bg-green-500 text-white"
-                  : "bg-red-400 hover:bg-red-500 text-white"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  ? "bg-black hover:bg-gray-800 text-white border-2 border-black"
+                  : "bg-white hover:bg-gray-100 text-black border-2 border-black"
+              } disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:border-gray-400 disabled:hover:border-gray-400 disabled:cursor-not-allowed`}
             >
               {activeTab === 'buy' ? 'Buy' : 'Sell'} {selectedOutcome === 'yes' ? 'Yes' : 'No'}
             </Button>
