@@ -7,6 +7,8 @@ import { ProfileHeader } from "../ui/profile-header";
 import TabNavigation from "../ui/TabNavigation";
 import { PullToRefresh } from "../PullToRefresh";
 import { Button } from "../ui/button";
+import { AICard } from "../ui/ai-card";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "../ui/drawer";
 
 interface TradingAsset {
   id: string;
@@ -618,6 +620,11 @@ export default function TradingPageLayout({ asset, candlestickData, orderBookDat
   const [showTrading, setShowTrading] = useState(false);
   const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
   const [defaultTradingMode, setDefaultTradingMode] = useState<'buy' | 'sell'>('buy');
+  const [tapTradeOpen, setTapTradeOpen] = useState(false);
+  const [tapAmountPercent, setTapAmountPercent] = useState(0);
+  const [tapUsdtAmount, setTapUsdtAmount] = useState("0.00");
+  const [tapSlippage, setTapSlippage] = useState<0.5 | 1>(0.5);
+  const usdtBalance = 1000;
   const router = useRouter();
   const [orders, setOrders] = useState<Array<{
     id: string;
@@ -883,6 +890,140 @@ export default function TradingPageLayout({ asset, candlestickData, orderBookDat
               </Button>
             </div>
           )}
+
+          {/* Tap Trade CTA */}
+          {!showTrading && (
+            <div className="mt-4" onClick={() => setTapTradeOpen(true)}>
+              <AICard>
+                <div className="py-3 flex items-center justify-center">
+                  <div className="text-sm font-semibold">Tap Trade</div>
+                </div>
+              </AICard>
+            </div>
+          )}
+
+          <Drawer open={tapTradeOpen} onOpenChange={setTapTradeOpen}>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Tap Trade</DrawerTitle>
+              </DrawerHeader>
+
+              <div className="px-4 pb-4 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Input Token</label>
+                    <div className="p-3 border border-gray-300 rounded-lg">USDT</div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Output Token</label>
+                    <div className="p-3 border border-gray-300 rounded-lg">{asset.symbol}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount (USDT)</label>
+                  <input
+                    type="number"
+                    value={tapUsdtAmount}
+                    onChange={(e)=>{
+                      const usdt = parseFloat(e.target.value) || 0;
+                      setTapUsdtAmount(usdt.toFixed(2));
+                      const pct = Math.min(100, Math.max(0, (usdt/usdtBalance)*100));
+                      setTapAmountPercent(pct);
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                    placeholder="0.00"
+                  />
+
+                  <div className="flex space-x-2 my-3">
+                    {[25,50,75,100].map(p=> (
+                      <button key={p} onClick={()=>{
+                        const usdt = usdtBalance*p/100;
+                        setTapUsdtAmount(usdt.toFixed(2));
+                        setTapAmountPercent(p);
+                      }} className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg ${Math.round(tapAmountPercent)===p ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{p}%</button>
+                    ))}
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-gray-700">Amount</span>
+                      <span className="text-sm text-gray-500">{tapAmountPercent.toFixed(2)}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" step="0.01" value={tapAmountPercent} onChange={(e)=>{
+                      const v=parseFloat(e.target.value)||0; setTapAmountPercent(v); const usdt=v*usdtBalance/100; setTapUsdtAmount(usdt.toFixed(2));
+                    }} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider" style={{background:`linear-gradient(to right, #000000 0%, #000000 ${tapAmountPercent}%, #e5e7eb ${tapAmountPercent}%, #e5e7eb 100%)`}} />
+                    <div className="text-xs text-gray-500 mt-1">Available: ${usdtBalance.toFixed(2)} USDT • Using: ${tapUsdtAmount || '0.00'} USDT</div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Slippage Tolerance</label>
+                  <div className="flex gap-2">
+                    {[0.5, 1].map(s=> (
+                      <button key={s} onClick={()=>setTapSlippage(s as 0.5 | 1)} className={`flex-1 py-2 rounded-lg text-sm font-medium ${tapSlippage===s ? 'bg-black text-white' : 'bg-white text-black border border-gray-300 hover:bg-gray-50'}`}>{s}%</button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              <DrawerFooter>
+                <Button className="w-full py-3 rounded-lg text-sm font-medium bg-black text-white border-2 border-black" onClick={()=>{
+                  const preset = {
+                    inputToken: 'USDT',
+                    outputToken: asset.symbol,
+                    usdt: parseFloat(tapUsdtAmount)||0,
+                    percent: tapAmountPercent,
+                    slippage: tapSlippage,
+                    ts: Date.now()
+                  };
+                  try { localStorage.setItem('tap_trade_preset', JSON.stringify(preset)); } catch {}
+                  setTapTradeOpen(false);
+                  router.push(`/tap-trade/${asset.symbol.toLowerCase()}`);
+                }}>Start Trading</Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+
+          <style jsx>{`
+            .slider {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 100%;
+              height: 8px;
+              border-radius: 4px;
+              background: #e5e7eb;
+              outline: none;
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            .slider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              height: 20px;
+              width: 20px;
+              border-radius: 50%;
+              background: #000000;
+              cursor: pointer;
+              border: 2px solid #ffffff;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              margin-top: -6px;
+            }
+            .slider::-moz-range-thumb {
+              height: 20px;
+              width: 20px;
+              border-radius: 50%;
+              background: #000000;
+              cursor: pointer;
+              border: 2px solid #ffffff;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .slider:focus { outline: none; }
+            .slider:focus::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(0,0,0,0.3); }
+            .slider:focus::-moz-range-thumb { box-shadow: 0 0 0 3px rgba(0,0,0,0.3); }
+          `}</style>
 
         </div>
       </PullToRefresh>

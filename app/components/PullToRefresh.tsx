@@ -125,11 +125,9 @@ export function PullToRefresh({
     const distance = currentY.current - startY.current;
     
     if (distance > 0) {
-      // Try to prevent default, but don't break if it fails
-      try {
+      // Only call preventDefault if the event is cancelable (not passive)
+      if (e.cancelable) {
         e.preventDefault();
-      } catch (error) {
-        // Ignore passive event listener errors
       }
       const pullDistance = Math.min(distance * 0.5, maxPullDistance);
       setPullDistance(pullDistance);
