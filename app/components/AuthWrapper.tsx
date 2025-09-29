@@ -124,7 +124,9 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
   const getActiveTab = () => {
     if (!pathname) return "home"; // Handle null pathname
     if (pathname.startsWith("/home")) return "home";
-    if (pathname.startsWith("/market")) return "market";
+    if (pathname.startsWith("/market")) return "vault";
+    if (pathname.startsWith("/tap-trade") || pathname.startsWith("/btc-trade") || pathname.startsWith("/eth-trade") || pathname.startsWith("/xrp-trade") || pathname.startsWith("/scr-trade")) return "tap-trade";
+    if (pathname.startsWith("/predictions")) return "news-market";
     if (pathname.startsWith("/rewards")) return "rewards";
     if (pathname.startsWith("/portfolio")) return "portfolio";
     return "home";
